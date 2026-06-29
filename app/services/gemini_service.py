@@ -8,7 +8,7 @@ client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
-def get_ai_response(message):
+def get_ai_response(history):
 
     prompt = f"""
     You are Chat Nexus, an AI assistant.
@@ -19,14 +19,24 @@ def get_ai_response(message):
     - For programming questions, give short explanations with small examples.
     - Do not give very lengthy answers.
 
-    User: {message}
+    Conversation:
+        {history}
 
     Assistant:
     """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
 
-    return response.text
+        return response.text
+
+    except Exception as e:
+        print("Gemini Error:", e)
+
+        return (
+            "Sorry, the AI service is currently busy. "
+            "Please try again in a few moments."
+        )

@@ -5,6 +5,12 @@ import os
 from dotenv import load_dotenv
 from app.services.gemini_service import get_ai_response
 
+from app.services.memory_service import (
+    save_message,
+    get_history,
+    clear_history
+)
+
 load_dotenv()
 
 router = APIRouter()
@@ -13,6 +19,7 @@ VERIFY_TOKEN = "chat_nexus_verify"
 
 TOKEN = os.getenv("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
+
 
 def send_message(to, message):
 
@@ -69,10 +76,7 @@ async def receive_message(request: Request):
     print(json.dumps(data, indent=4))
 
     try:
-        message = (
-            data["entry"][0]["changes"][0]
-            ["value"]["messages"][0]["text"]["body"]
-        )
+        message = "What is my name?"
 
         sender = (
             data["entry"][0]["changes"][0]
@@ -81,8 +85,31 @@ async def receive_message(request: Request):
 
         print("Message:", message)
         print("Sender:", sender)
+        
+        save_message(
+            sender,
+            "user",
+            message
+        )
 
-        ai_reply = get_ai_response(message)
+        history = get_history(sender)
+
+        conversation = ""
+
+        for role, msg in history:
+            conversation += f"{role}: {msg}\n"
+            
+        print("\n=== CONVERSATION ===")
+        print(conversation)
+        print("====================\n")
+
+        ai_reply = get_ai_response(conversation)
+
+        save_message(
+            sender,
+            "assistant",
+            ai_reply
+        )
 
         # Limit response to 4000 characters
         ai_reply = ai_reply[:4000]
