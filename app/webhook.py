@@ -76,7 +76,7 @@ async def receive_message(request: Request):
     print(json.dumps(data, indent=4))
 
     try:
-        message = "What is my name?"
+        message = "/about"
 
         sender = (
             data["entry"][0]["changes"][0]
@@ -85,6 +85,57 @@ async def receive_message(request: Request):
 
         print("Message:", message)
         print("Sender:", sender)
+        
+        
+        if message.lower() == "/help":
+
+            help_text = """
+        🤖 Chat Nexus Commands
+
+        /help - Show commands
+        /clear - Clear conversation memory
+        /about - About Chat Nexus
+        """
+
+            send_message(
+                "919629133841",
+                help_text
+            )
+
+            return {"status": "help"}
+        
+        
+        if message.lower() == "/about":
+
+            about_text = """
+        🤖 Chat Nexus
+
+        An AI-powered WhatsApp assistant built using:
+
+        • FastAPI
+        • Gemini AI
+        • SQLite
+        • WhatsApp Cloud API
+
+        Developed by Arun.
+        """
+
+            send_message(
+                "919629133841",
+                about_text
+            )
+
+            return {"status": "about"}
+
+        if message.lower() == "/clear":
+            clear_history(sender)
+
+            send_message(
+                "919629133841",
+                "Conversation history cleared successfully."
+            )
+
+            return {"status": "cleared"}
         
         save_message(
             sender,
